@@ -8,14 +8,51 @@
 
 config_version=4
 
+_global_script_classes=[ {
+"base": "Area2D",
+"class": "Character",
+"language": "GDScript",
+"path": "res://scenes/character.gd"
+}, {
+"base": "Area2D",
+"class": "HitBox",
+"language": "GDScript",
+"path": "res://scenes/hit_box.gd"
+}, {
+"base": "Area2D",
+"class": "HurtBox",
+"language": "GDScript",
+"path": "res://scenes/hurt_box.gd"
+} ]
+_global_script_class_icons={
+"Character": "",
+"HitBox": "",
+"HurtBox": ""
+}
+
 [application]
 
 config/name="Forgemaster"
+run/main_scene="res://scenes/game.tscn"
 config/icon="res://icon.png"
+
+[display]
+
+window/size/width=1280
+window/size/height=720
 
 [gui]
 
 common/drop_mouse_on_gui_input_disabled=true
+
+[layer_names]
+
+2d_physics/layer_2="ally_detection"
+2d_physics/layer_3="enemy_detection"
+2d_physics/layer_4="ally_hit_box"
+2d_physics/layer_5="enemy_hit_box"
+2d_physics/layer_6="ally_hurt_box"
+2d_physics/layer_7="enemy_hurt_box"
 
 [physics]
 
