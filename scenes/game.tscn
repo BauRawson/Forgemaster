@@ -1,10 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://scenes/game.gd" type="Script" id=1]
 [ext_resource path="res://scenes/minion_spawner.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/enemy_spawner.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/sprites/forge_circle.png" type="Texture" id=4]
-[ext_resource path="res://assets/sprites/forge_circle_circle_off.png" type="Texture" id=5]
 
 [node name="Game" type="Node2D"]
 script = ExtResource( 1 )
@@ -22,12 +21,6 @@ margin_bottom = 256.0
 margin_right = 40.0
 margin_bottom = 40.0
 texture = ExtResource( 4 )
-
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Forge/ForgeCircle"]
-margin_right = 40.0
-margin_bottom = 40.0
-rect_pivot_offset = Vector2( 128, 128 )
-texture = ExtResource( 5 )
 
 [node name="CurrentRuneRichTextLabel" type="RichTextLabel" parent="CanvasLayer/Forge"]
 unique_name_in_owner = true
