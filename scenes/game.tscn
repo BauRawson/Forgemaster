@@ -1,12 +1,92 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://scenes/game.gd" type="Script" id=1]
 [ext_resource path="res://scenes/minion_spawner.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/enemy_spawner.tscn" type="PackedScene" id=3]
 [ext_resource path="res://assets/sprites/forge_circle.png" type="Texture" id=4]
+[ext_resource path="res://assets/fonts/norse_32_font.tres" type="DynamicFont" id=5]
+[ext_resource path="res://assets/sprites/forge_circle_activate.png" type="Texture" id=6]
+[ext_resource path="res://scenes/background_05_sample_00_2048.png" type="Texture" id=7]
+[ext_resource path="res://scenes/player_base.tscn" type="PackedScene" id=8]
+[ext_resource path="res://scenes/enemy_base.tscn" type="PackedScene" id=9]
+[ext_resource path="res://assets/fonts/NorseBold-2Kge.otf" type="DynamicFontData" id=10]
+
+[sub_resource type="Animation" id=1]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("ActivateCircle:rect_scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector2( 1e-05, 1e-05 ) ]
+}
+
+[sub_resource type="Animation" id=2]
+resource_name = "activate"
+length = 2.0
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("ActivateCircle:rect_scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 1, 2 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector2( 1e-05, 1e-05 ), Vector2( 1, 1 ), Vector2( 1e-05, 1e-05 ) ]
+}
+
+[sub_resource type="DynamicFont" id=3]
+size = 64
+outline_size = 1
+outline_color = Color( 0, 0, 0, 1 )
+use_mipmaps = true
+use_filter = true
+extra_spacing_char = 1
+font_data = ExtResource( 10 )
+
+[sub_resource type="StyleBoxFlat" id=4]
+bg_color = Color( 0.533333, 0.533333, 0.533333, 1 )
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color( 0, 1, 0.972549, 1 )
+
+[sub_resource type="StyleBoxFlat" id=5]
+bg_color = Color( 0, 1, 0.972549, 1 )
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color( 0, 1, 0.972549, 1 )
+
+[sub_resource type="StyleBoxFlat" id=6]
+bg_color = Color( 0.533333, 0.533333, 0.533333, 1 )
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color( 0.403922, 0.403922, 0.403922, 1 )
 
 [node name="Game" type="Node2D"]
+pause_mode = 2
 script = ExtResource( 1 )
+blue = Color( 0.490196, 0.490196, 1, 1 )
+green = Color( 0.34902, 0.72549, 1, 1 )
+red = Color( 1, 1, 1, 1 )
+
+[node name="Background05Sample002048" type="Sprite" parent="."]
+position = Vector2( 638, 359 )
+scale = Vector2( 0.8, 0.8 )
+texture = ExtResource( 7 )
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
@@ -22,23 +102,117 @@ margin_right = 40.0
 margin_bottom = 40.0
 texture = ExtResource( 4 )
 
+[node name="ActivateCircle" type="TextureRect" parent="CanvasLayer/Forge"]
+modulate = Color( 1, 1, 1, 0.666667 )
+margin_right = 256.0
+margin_bottom = 256.0
+rect_scale = Vector2( 1e-05, 1e-05 )
+rect_pivot_offset = Vector2( 128, 128 )
+texture = ExtResource( 6 )
+expand = true
+
 [node name="CurrentRuneRichTextLabel" type="RichTextLabel" parent="CanvasLayer/Forge"]
 unique_name_in_owner = true
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-margin_left = -50.0
-margin_top = -7.5
-margin_right = 50.0
-margin_bottom = 7.5
+margin_left = -205.0
+margin_top = -18.5
+margin_right = 205.0
+margin_bottom = 18.5
+custom_colors/default_color = Color( 1, 1, 1, 1 )
+custom_fonts/normal_font = ExtResource( 5 )
 bbcode_enabled = true
 bbcode_text = "[center]lorem[/center]"
 text = "lorem"
 fit_content_height = true
 
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Forge"]
+anims/RESET = SubResource( 1 )
+anims/activate = SubResource( 2 )
+
+[node name="GameOver" type="Control" parent="CanvasLayer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/GameOver"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 0.392157 )
+
+[node name="GameOverLabel" type="Label" parent="CanvasLayer/GameOver"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -98.0
+margin_top = -32.0
+margin_right = 98.0
+margin_bottom = 32.0
+custom_fonts/font = SubResource( 3 )
+text = "You win!"
+
+[node name="PlayAgainButton" type="Button" parent="CanvasLayer/GameOver"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -150.0
+margin_top = 100.0
+margin_right = 150.0
+margin_bottom = 200.0
+custom_fonts/font = ExtResource( 5 )
+custom_styles/hover = SubResource( 4 )
+custom_styles/pressed = SubResource( 5 )
+custom_styles/focus = SubResource( 4 )
+custom_styles/normal = SubResource( 6 )
+text = "PLAY AGAIN"
+
+[node name="LevelLabel" type="Label" parent="CanvasLayer"]
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -40.0
+margin_right = -40.0
+margin_bottom = 131.0
+grow_horizontal = 0
+custom_fonts/font = SubResource( 3 )
+text = "Level 1"
+align = 1
+valign = 1
+
+[node name="Tutorial" type="Control" parent="CanvasLayer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Label" type="Label" parent="CanvasLayer/Tutorial"]
+margin_left = 90.0
+margin_right = 523.0
+margin_bottom = 242.0
+custom_fonts/font = ExtResource( 5 )
+text = "Type the word inside the circle to charge a rune"
+valign = 1
+autowrap = true
+
 [node name="EnemySpawner" parent="." instance=ExtResource( 3 )]
-position = Vector2( 1350, 325 )
+pause_mode = 1
+position = Vector2( 1180, 0 )
 
 [node name="MinionSpawner" parent="." instance=ExtResource( 2 )]
-position = Vector2( -74, 324 )
+position = Vector2( 100, 0 )
+
+[node name="PlayerBase" parent="." instance=ExtResource( 8 )]
+position = Vector2( 130, 400 )
+direction = Vector2( 0, 0 )
+move_speed = 0.0
+attack_range = 0.0
+attack_damage = 0.0
+health_points = 120.0
+
+[node name="EnemyBase" parent="." instance=ExtResource( 9 )]
+position = Vector2( 1153, 400 )
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2( 640, 360 )
+current = true

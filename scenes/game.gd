@@ -1,8 +1,12 @@
 extends Node2D
 
+signal tutorial
+signal tutorial_2
+
+var current_level: int = 1
 
 var active_rune: String = ""
-var current_letter_index: int = -1
+var current_letter_index: int = 0
 var current_rune_index: int = 0
 var runes: Array = []
 var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -11,24 +15,96 @@ onready var current_rune_label: RichTextLabel = $"%CurrentRuneRichTextLabel"
 
 export var blue: Color = Color.blue
 export var green: Color = Color.green
-export var red: Color = Color.red
+export var red: Color = Color.red # 8383a6
 
 var rune_names: Array = [
-	"Erebos",
-	"Ishtar",
-	"Algiz",
-	"Nauthiz",
-	"Thurisaz",
-	"Ansuz",
-	"Kaos",
-	"Eihwaz",
-	"Aegir",
-	"Draugr"
+	"erebos",
+	"ishtar",
+	"algiz",
+	"nauthiz",
+	"thurisaz",
+	"ansuz",
+	"kaos",
+	"eihwaz",
+	"aegir",
+	"draugr"
 ]
 
+var tutorial_0: String = "Type the word inside the circle to charge a rune"
+var tutorial_1: String = "once all runes have been charged, press enter to summon a minion. the fuller the circle, the stronger the minion."
 
 func _ready():
 	get_new_rune_set()
+	$PlayerBase.connect("died", self, "on_player_base_died")
+	$EnemyBase.connect("died", self, "on_enemy_base_died")
+	
+	$CanvasLayer/Tutorial.show()
+	
+	connect("tutorial", self, "advance_tutorial")
+	get_tree().paused = true
+
+
+func advance_tutorial() -> void:
+	print("HOLA")
+	disconnect("tutorial", self, "advance_tutorial")
+	connect("tutorial_2", self, "finish_tutorial")
+	$CanvasLayer/Tutorial/Label.text = tutorial_1
+
+
+func finish_tutorial() -> void:
+	disconnect("tutorial", self, "finish_tutorial")
+	$CanvasLayer/Tutorial.hide()
+	get_tree().paused = false
+
+
+func on_player_base_died() -> void:
+	current_level = 1
+	$CanvasLayer/GameOver/GameOverLabel.text = "You lost!"
+	$CanvasLayer/GameOver/PlayAgainButton.connect("pressed", self, "restart_game", [current_level])
+	$CanvasLayer/GameOver/PlayAgainButton.text = "TRY AGAIN"
+	
+	$CanvasLayer/GameOver.show()
+	$EnemySpawner/SpawnTimer.stop()
+
+
+func on_enemy_base_died() -> void:
+	current_level += 1
+	$CanvasLayer/GameOver/GameOverLabel.text = "You win!"
+	$CanvasLayer/GameOver/PlayAgainButton.connect("pressed", self, "restart_game", [current_level])
+	$CanvasLayer/GameOver/PlayAgainButton.text = "NEXT LEVEL"
+	
+	$CanvasLayer/GameOver.show()
+	$EnemySpawner/SpawnTimer.stop()
+
+
+func restart_game(level: int) -> void:
+	if level == 1:
+		get_tree().reload_current_scene()
+	else:
+		# delete minions
+		for minion in $MinionSpawner.get_children():
+			minion.queue_free()
+		
+		# delete enemies
+		for enemy in $EnemySpawner/Enemies.get_children():
+			enemy.queue_free()
+		
+		# restore players base hp
+		$PlayerBase.health_points = 120
+		
+		# create new enemy base
+		var enemy_base = load("res://scenes/enemy_base.tscn").instance()
+		add_child(enemy_base)
+		enemy_base.global_position = Vector2(1153, 400)
+		enemy_base.connect("died", self, "on_enemy_base_died")
+		
+		# update enemy spawner cooldown
+		$EnemySpawner/SpawnTimer.wait_time = $EnemySpawner/SpawnTimer.wait_time - 0.25
+		$EnemySpawner/SpawnTimer.start()
+		# udpate level label
+		$CanvasLayer/LevelLabel.text = "Level " + str(current_level)
+		$CanvasLayer/GameOver.hide()
+		get_new_rune_set()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -37,30 +113,43 @@ func _unhandled_input(event: InputEvent) -> void:
 		var typed_event: InputEventKey = event
 		
 		var key_typed = PoolByteArray([typed_event.unicode]).get_string_from_utf8()
-		print(key_typed)
+		print(key_typed.to_lower())
 		
+		print(current_letter_index)
 		var next_character: String = active_rune.substr(current_letter_index, 1)
 		
-		if key_typed == next_character:
+		if key_typed.to_lower() == next_character:
 			print("success")
 			current_letter_index += 1
 			set_next_character(current_letter_index)
 			
 			if current_letter_index == active_rune.length():
 				print("word completed")
-				current_letter_index = -1
-				$CanvasLayer/Forge/ForgeCircle.get_child(current_rune_index).get_node("RuneCompleteFull").show()
+				emit_signal("tutorial")
+				current_letter_index = 0
+				$CanvasLayer/Forge/ForgeCircle.get_child(current_rune_index).get_node("FireParticles").emitting = true
 				
 				if runes.size() - 1 == current_rune_index:
-					current_rune_index = 0
-					spawn_ally()
-					get_new_rune_set()
+					$CanvasLayer/Forge/AnimationPlayer.play("activate")
 				else:
 					current_rune_index += 1
 					active_rune = runes[current_rune_index]
 					current_rune_label.bbcode_text = "[center]"+ active_rune +"[/center]"
 		else: # incorrectly typed.
 			print("not success")
+		
+		if event.scancode == KEY_ENTER:
+			# check if activate circle was animated
+			# stop animation, get scale values
+			# reset animation
+			# spawn ally
+			if $CanvasLayer/Forge/AnimationPlayer.is_playing():
+				print($CanvasLayer/Forge/ActivateCircle.rect_scale)
+				$CanvasLayer/Forge/AnimationPlayer.stop()
+				$CanvasLayer/Forge/AnimationPlayer.play("RESET")
+				spawn_ally(current_rune_index, $CanvasLayer/Forge/ActivateCircle.rect_scale.x)
+				current_rune_index = 0
+				get_new_rune_set()
 
 
 func find_new_active_rune(typed_character: String) -> void:
@@ -70,7 +159,6 @@ func find_new_active_rune(typed_character: String) -> void:
 	print(typed_character)
 	print(next_character)
 	if typed_character == next_character:
-		print("HOLA")
 		current_letter_index = 1
 		set_next_character(current_letter_index)
 		active_rune = prompt
@@ -81,7 +169,7 @@ func get_new_rune_set() -> void:
 		rune_complete_icon.queue_free()
 	
 	runes.clear()
-	current_letter_index = -1
+	current_letter_index = 0
 	current_rune_index = 0
 	
 	rng.randomize()
@@ -129,8 +217,9 @@ func get_bbcode_end_color_tag() -> String:
 	return "[/color]"
 
 
-func spawn_ally() -> void:
-	$MinionSpawner.spawn_character()
+func spawn_ally(tier: int, modifier: float) -> void:
+	emit_signal("tutorial_2")
+	$MinionSpawner.spawn_character(tier, modifier)
 
 
 """

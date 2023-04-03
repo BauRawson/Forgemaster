@@ -11,4 +11,5 @@ func on_spawn_timer_timeout() -> void:
 func spawn_character() -> void:
 	var character: Character = character_scene.instance()
 	
-	add_child(character)
+	$Enemies.add_child(character)
+	character.global_position.y = rand_range(250, 600)

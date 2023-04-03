@@ -1,11 +1,24 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=4 format=2]
 
 [ext_resource path="res://scenes/character.tscn" type="PackedScene" id=1]
+[ext_resource path="res://assets/sprites/Knight/noBKG_KnightRun_strip.png" type="Texture" id=2]
+
+[sub_resource type="Gradient" id=1]
+colors = PoolColorArray( 0.545098, 0.141176, 0.141176, 1, 0.356863, 0, 0, 0.901961 )
 
 [node name="Enemy" instance=ExtResource( 1 )]
 collision_layer = 4
 collision_mask = 2
 direction = Vector2( -1, 0 )
+attack_damage = 4.0
+
+[node name="Sprite" parent="." index="0"]
+texture = ExtResource( 2 )
+flip_h = true
+
+[node name="CPUParticles2D" parent="Sprite" index="0"]
+color = Color( 0.545098, 0.141176, 0.141176, 1 )
+color_ramp = SubResource( 1 )
 
 [node name="HitBox" parent="." index="2"]
 collision_layer = 16
